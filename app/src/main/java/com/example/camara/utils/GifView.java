@@ -44,7 +44,9 @@ public class GifView extends View {
 
     private boolean mVisible = true;
 
-    private volatile boolean mPaused = false;
+    public static  boolean isPlaying = false;
+
+    public static volatile boolean mPaused = false;
 
     Handler handler = new Handler();
 
@@ -53,6 +55,7 @@ public class GifView extends View {
         public void run() {
             if (!isPaused()) {
                 setPaused(true);
+                isPlaying = false;
                 LocalBroadcastManager.getInstance(getContext()).sendBroadcast(new Intent("ACTION_LOCAL_SEND"));
             }
         }
@@ -170,7 +173,7 @@ public class GifView extends View {
                 updateAnimationTime();
                 drawMovieFrame(canvas);
                 invalidateView();
-               // SystemClock.sleep(50);
+                isPlaying = true;
             } else {
                 drawMovieFrame(canvas);
             }

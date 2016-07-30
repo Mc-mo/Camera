@@ -84,8 +84,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 @Override
                 public void run() {
                     if (camera != null) {
-                    //    camera.startPreview();
-                       camera.takePicture(null, null, new FirstCallback());
+                        // camera.startPreview();
+                        camera.takePicture(null, null, new FirstCallback());
                     }
                 }
             });
@@ -181,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                             takephotoTime = System.currentTimeMillis();
                             processTime = System.currentTimeMillis();
                             camera.takePicture(null, null, new FirstCallback());
+
                         }
 
                     }
@@ -361,12 +362,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //                }else {
 //                    error_count=0;
 //                }
-//                if (media_iv.isPaused()){
-//                    handler.postDelayed(runnable,1000);
-//                }
-//                if (media_iv.isPaused()) {
-//                    handler.postDelayed(runnable, 2000);
-//                }
+
                 ArrayList<LocationBean> locationList = new ArrayList();
                 if (locations != null && locations.length() > 0) {
                     for (int i = 0; i < locations.length(); i++) {
@@ -428,25 +424,71 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            L.e("event.getX()=" + event.getX() + "           event.getY()=" + event.getY());
-            L.e("SVDraw.start_X=" + SVDraw.start_X + "SVDraw.end_X =" + SVDraw.end_X + "SVDraw.start_Y=" + SVDraw.start_Y + " SVDraw.end_Y=" + SVDraw.end_Y);
-            if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
-                ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-                if (show_flag) {
-                    surface_tip.setVisibility(View.GONE);
-                    media_iv.setVisibility(View.VISIBLE);
-                    L.e("onTouch---true");
-                    show_flag = false;
-                    showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+            if (GifView.isPlaying) {
+                return false;
+            }
+            WindowManager wm = (WindowManager) MainActivity.this
+                    .getSystemService(Context.WINDOW_SERVICE);
+            int width = wm.getDefaultDisplay().getWidth();
+            int height = wm.getDefaultDisplay().getHeight();
+            switch (screenOritation) {
+                case Constants.TOP:
+                    if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
+                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+                        if (show_flag) {
+                            surface_tip.setVisibility(View.GONE);
+                            media_iv.setVisibility(View.VISIBLE);
+                            show_flag = false;
+                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
 
 
-                }
+                        }
+                    }
+                    break;
+                case Constants.BOTTOM:
 
+                    if (event.getX() > (width - SVDraw.end_X) && event.getX() < (width - SVDraw.start_X) && event.getY() > (height - SVDraw.end_Y) && event.getY() < (height - SVDraw.start_Y)) {
+                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+                        if (show_flag) {
+                            surface_tip.setVisibility(View.GONE);
+                            media_iv.setVisibility(View.VISIBLE);
+                            show_flag = false;
+                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+
+
+                        }
+                    }
+                    break;
+                case Constants.LEFT:
+                    if (event.getX() > SVDraw.start_Y && event.getX() < SVDraw.end_Y && event.getY() > (width - SVDraw.end_X) && event.getY() < (width - SVDraw.start_X)) {
+                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+                        if (show_flag) {
+                            surface_tip.setVisibility(View.GONE);
+                            media_iv.setVisibility(View.VISIBLE);
+                            show_flag = false;
+                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+                        }
+
+                    }
+                    break;
+                case Constants.RIGHT:
+                    if (event.getX() > (height - SVDraw.end_Y) && event.getX() < (height - SVDraw.start_Y) && event.getY() > SVDraw.start_X && event.getY() < SVDraw.end_X) {
+                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+                        if (show_flag) {
+                            surface_tip.setVisibility(View.GONE);
+                            media_iv.setVisibility(View.VISIBLE);
+                            show_flag = false;
+                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+                        }
+
+                    }
+                    break;
 
             }
 
             return false;
         }
+
 
     }
 
@@ -461,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //        media_iv.setY(startY);
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) media_iv.getLayoutParams();
 
-        if (isScreenOriatationPortrait(this)) {
+        if (isScreenOriatationPortrait(MainActivity.this)) {
             params.width = width;
             media_iv.setLayoutParams(params);
         } else {
@@ -485,13 +527,16 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             case Constants.LEFT:
                 media_iv.setRotation(-90);
                 L.e("size===", media_iv.getHeight() + "");
-                media_iv.setTranslationY(-media_iv.getHeight());
+                media_iv.setTranslationX(-media_iv.getWidth());
                 break;
             case Constants.RIGHT:
                 media_iv.setRotation(90);
+                media_iv.setTranslationY(-media_iv.getWidth());
                 break;
             case Constants.BOTTOM:
                 media_iv.setRotation(180);
+                media_iv.setTranslationX(-media_iv.getWidth());
+                media_iv.setTranslationY(- media_iv.getHeight());
                 break;
 
 
@@ -507,8 +552,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         @Override
         public void onReceive(Context context, Intent intent) {
             if (media_iv.isPaused()) {
-                L.e("---------------------------------------");
                 handler.postDelayed(runnable, 1000);
+                //media_iv.setPaused(true);
+
             }
         }
     }

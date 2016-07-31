@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.camara.utils.Constants;
-import com.example.camara.utils.GifView;
 import com.example.camara.utils.ImageUtils;
 import com.example.camara.utils.Utils;
 import com.zhuchudong.toollibrary.AppUtils;
@@ -31,14 +30,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
+import pl.droidsonroids.gif.AnimationListener;
+import pl.droidsonroids.gif.GifDrawable;
+import pl.droidsonroids.gif.GifImageView;
 
-public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener {
+public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener, AnimationListener {
     //宽度450
 
     int id;
     Camera camera;
     SurfaceHolder holder;
-    GifView media_iv;
+    GifImageView media_iv;
     SurfaceView surface_camera;
     SVDraw surface_tip;
     public int screenOritation = 60;
@@ -49,7 +51,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     public OrientationEventListener mOrientationListener;
     private TextView timeView;
     StringBuffer tv_string = new StringBuffer();
-
+    private GifDrawable mGifDrawable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +97,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     private void initView() {
         StatusBarUtil.setColor(TakePhotoTest.this, getResources().getColor(R.color.colorPrimary));
         findViewById(R.id.btn_linearlayout).setVisibility(View.VISIBLE);
-        media_iv = (GifView) findViewById(R.id.media_iv);
+        media_iv = (GifImageView) findViewById(R.id.media_iv);
         surface_camera = (SurfaceView) findViewById(R.id.surface_camera);
         surface_tip = (SVDraw) findViewById(R.id.surface_tip);
         findViewById(R.id.btn_takepicture).setOnClickListener(this);
@@ -209,6 +211,12 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
         camera.setDisplayOrientation(90);
         camera.startPreview();
         camera.cancelAutoFocus();
+    }
+
+    @Override
+    public void onAnimationCompleted(int loopNumber) {
+        media_iv.setVisibility(View.GONE);
+        surface_tip.setVisibility(View.VISIBLE);
     }
 
 
@@ -337,19 +345,18 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 showImg(SVDraw.start_X, SVDraw.start_Y);
 
             } else {
-                L.e("media_iv.isPaused()="+media_iv.isPaused());
-                if (media_iv.isPaused()){
-
-                    media_iv.setMovie(null);
-                   // media_iv=null;
-                    media_iv.setVisibility(View.GONE);
-                    surface_tip.setVisibility(View.VISIBLE);
-                }
-                media_iv.setVisibility(View.GONE);
-                surface_tip.setVisibility(View.VISIBLE);
-                L.e("onTouch---false");
-                show_flag = true;
-              //  showImg(SVDraw.start_X, SVDraw.start_Y);
+//                if (media_iv.isPaused()){
+//
+//                    media_iv.setMovie(null);
+//                   // media_iv=null;
+//                    media_iv.setVisibility(View.GONE);
+//                    surface_tip.setVisibility(View.VISIBLE);
+//                }
+//                media_iv.setVisibility(View.GONE);
+//                surface_tip.setVisibility(View.VISIBLE);
+//                L.e("onTouch---false");
+//                show_flag = true;
+//              //  showImg(SVDraw.start_X, SVDraw.start_Y);
 
             }
             return false;
@@ -358,10 +365,19 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     }
 
     private void showImg(float startX, float startY) {
-        media_iv.setX(startX);
-        media_iv.setY(startY);
-        media_iv.setMovieResource(R.mipmap.s3);
-        L.e(media_iv.isPaused()+"");
+//        media_iv.setX(startX);
+//        media_iv.setY(startY);
+//        media_iv.setMovieResource(R.mipmap.s3);
+//        L.e(media_iv.isPaused()+"");
+        try {
+            mGifDrawable = new GifDrawable(getResources(),R.mipmap.s3);
+            media_iv.setImageDrawable(mGifDrawable);
+            mGifDrawable.setSpeed(1.0f);
+            mGifDrawable.addAnimationListener(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         switch (screenOritation){
             case  Constants.TOP:

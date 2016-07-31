@@ -1,15 +1,11 @@
 package com.example.camara;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -22,7 +18,6 @@ import android.widget.TextView;
 
 import com.example.camara.utils.Constants;
 import com.example.camara.utils.CrashHandler;
-import com.example.camara.utils.GifView;
 import com.example.camara.utils.ImageUtils;
 import com.example.camara.utils.Utils;
 import com.zhuchudong.toollibrary.AppUtils;
@@ -42,8 +37,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import okhttp3.Call;
+import pl.droidsonroids.gif.AnimationListener;
+import pl.droidsonroids.gif.GifDrawable;
+import pl.droidsonroids.gif.GifImageView;
 
-public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener, AnimationListener {
     private static MainActivity instance;
     //宽度450
     TimerTask task;
@@ -64,10 +62,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     boolean takePhoto_flag = true;
 
-    LocalBroadcastReceiver localReceiver;
-    GifView media_iv;
+//    LocalBroadcastReceiver localReceiver;
+    GifImageView media_iv;
     public int screenOritation = 60;
-
+    private GifDrawable mGifDrawable;
     Handler handler = new Handler();
 
     Camera.PictureCallback currentCallBack;
@@ -76,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
+            surface_tip.setOnTouchListener(new myTouchEventListener());
+            mGifDrawable.recycle();
+
             media_iv.setVisibility(View.GONE);
             surface_tip.setVisibility(View.VISIBLE);
             show_flag = true;
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         initOrientationListener();
 
-        initReceiver();
+//        initReceiver();
 
         CrashHandler.getInstance().init(getApplicationContext());
 
@@ -123,9 +124,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void initReceiver() {
-        localReceiver = new LocalBroadcastReceiver();
+//        localReceiver = new LocalBroadcastReceiver();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, new IntentFilter("ACTION_LOCAL_SEND"));
+//        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, new IntentFilter("ACTION_LOCAL_SEND"));
 
     }
 
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onStop();
         OkHttpUtils.getInstance().getOkhttpClient().dispatcher().cancelAll();
         L.e("onStop");
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(localReceiver);
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(localReceiver);
 
     }
 
@@ -164,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         surface_camera = (SurfaceView) findViewById(R.id.surface_camera);
         surface_tip = (SVDraw) findViewById(R.id.surface_tip);
         timeView = (TextView) findViewById(R.id.tv_time);
-        media_iv = (GifView) findViewById(R.id.media_iv);
+        media_iv = (GifImageView) findViewById(R.id.media_iv);
 
 
     }
@@ -283,6 +284,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void onClick(View v) {
+
+    }
+
+    @Override
+    public void onAnimationCompleted(int loopNumber) {
+       handler.postDelayed(runnable,2000);
 
     }
 
@@ -424,9 +431,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (GifView.isPlaying) {
-                return false;
-            }
+//            if (GifView.isPlaying) {
+//                return false;
+//            }
+//            if (mGifDrawable.isRunning()) {
+//                return false;
+//            }
             WindowManager wm = (WindowManager) MainActivity.this
                     .getSystemService(Context.WINDOW_SERVICE);
             int width = wm.getDefaultDisplay().getWidth();
@@ -493,6 +503,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void showImg(float startX, float startY, float endX, float endY) {
+        surface_tip.setOnTouchListener(null);
         WindowManager wm = (WindowManager) MainActivity.this
                 .getSystemService(Context.WINDOW_SERVICE);
 
@@ -501,6 +512,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         L.e("size==", "width=" + width + "height=" + height);
 //        media_iv.setX(startX);
 //        media_iv.setY(startY);
+
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) media_iv.getLayoutParams();
 
         if (isScreenOriatationPortrait(MainActivity.this)) {
@@ -511,13 +523,27 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             media_iv.setLayoutParams(params);
         }
 
-        media_iv.setPaused(false);
+//        media_iv.setPaused(false);
         switch (id) {
             case 1:
-                media_iv.setMovieResource(R.mipmap.s3);
+                try {
+                    mGifDrawable = new GifDrawable(getResources(),R.mipmap.s3);
+                    media_iv.setImageDrawable(mGifDrawable);
+                    mGifDrawable.setSpeed(1.0f);
+                    mGifDrawable.addAnimationListener(this);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             case 2:
-                media_iv.setMovieResource(R.mipmap.s2);
+                try {
+                    mGifDrawable = new GifDrawable(getResources(),R.mipmap.s2);
+                    media_iv.setImageDrawable(mGifDrawable);
+                    mGifDrawable.setSpeed(1.0f);
+                    mGifDrawable.addAnimationListener(this);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
 
@@ -547,17 +573,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
 
-    public class LocalBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (media_iv.isPaused()) {
-                handler.postDelayed(runnable, 1000);
-                //media_iv.setPaused(true);
-
-            }
-        }
-    }
+//    public class LocalBroadcastReceiver extends BroadcastReceiver {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//
+//        }
+//    }
 
     /**
      * 返回当前屏幕是否为竖屏。

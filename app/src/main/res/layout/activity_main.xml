@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.example.camara.utils.GifView
+        <pl.droidsonroids.gif.GifImageView
             android:id="@+id/media_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

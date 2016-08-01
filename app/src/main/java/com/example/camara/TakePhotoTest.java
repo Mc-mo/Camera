@@ -10,6 +10,8 @@ import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.camara.utils.Constants;
@@ -52,6 +54,8 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     private TextView timeView;
     StringBuffer tv_string = new StringBuffer();
     private GifDrawable mGifDrawable;
+    TextView media_tv;
+    LinearLayout media_ll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,8 +110,8 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
         surface_tip.setOnTouchListener(new myTouchEventListener());
         media_iv.setOnTouchListener(new myTouchEventListener());
-
-
+        media_tv = (TextView) findViewById(R.id.media_text);
+        media_ll = (LinearLayout) findViewById(R.id.media_ll);
     }
 
 
@@ -215,8 +219,9 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
     @Override
     public void onAnimationCompleted(int loopNumber) {
-        media_iv.setVisibility(View.GONE);
+        media_ll.setVisibility(View.GONE);
         surface_tip.setVisibility(View.VISIBLE);
+        show_flag = true;
     }
 
 
@@ -339,9 +344,10 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
             ToastUtils.showToast(TakePhotoTest.this, "touch");
             if (show_flag) {
                 surface_tip.setVisibility(View.GONE);
-                media_iv.setVisibility(View.VISIBLE);
+                media_ll.setVisibility(View.VISIBLE);
                 L.e("onTouch---true");
                 show_flag = false;
+                media_tv.setText("发动机");
                 showImg(SVDraw.start_X, SVDraw.start_Y);
 
             } else {
@@ -369,10 +375,17 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 //        media_iv.setY(startY);
 //        media_iv.setMovieResource(R.mipmap.s3);
 //        L.e(media_iv.isPaused()+"");
+//        WindowManager wm = (WindowManager) TakePhotoTest.this
+//                .getSystemService(Context.WINDOW_SERVICE);
+//        int width = wm.getDefaultDisplay().getWidth();
+//        int height = wm.getDefaultDisplay().getHeight();
+//        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
+//
         try {
             mGifDrawable = new GifDrawable(getResources(),R.mipmap.s3);
             media_iv.setImageDrawable(mGifDrawable);
             mGifDrawable.setSpeed(1.0f);
+            media_iv.setScaleType(ImageView.ScaleType.MATRIX);
             mGifDrawable.addAnimationListener(this);
         } catch (IOException e) {
             e.printStackTrace();
@@ -384,15 +397,15 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 L.e(" Constants.TOP:"+ Constants.TOP);
                 break;
             case  Constants.LEFT:
-                media_iv.setRotation(-90);
+                media_ll.setRotation(-90);
                 L.e(" Constants.LEFT:"+ Constants.LEFT);
                 break;
             case  Constants.RIGHT:
-                media_iv.setRotation(90);
+                media_ll.setRotation(90);
                 L.e(" Constants.RIGHT:"+ Constants.RIGHT);
                 break;
             case  Constants.BOTTOM:
-                media_iv.setRotation(180);
+                media_ll.setRotation(180);
                 L.e(" Constants.BOTTOM:"+ Constants.BOTTOM);
                 break;
 

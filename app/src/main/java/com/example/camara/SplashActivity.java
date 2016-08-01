@@ -49,6 +49,8 @@ public class SplashActivity extends AppCompatActivity {
                 }
             });
         }
+
+
     }
 
     private void gotoActivity() {

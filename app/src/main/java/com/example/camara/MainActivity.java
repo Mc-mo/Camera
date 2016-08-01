@@ -13,7 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.camara.utils.Constants;
@@ -59,7 +59,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     StringBuffer tv_string = new StringBuffer();
     volatile int error_count = 0;
     boolean show_flag = true;
-
+    LinearLayout media_ll;
+    TextView media_text;
     boolean takePhoto_flag = true;
 
 //    LocalBroadcastReceiver localReceiver;
@@ -76,8 +77,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         public void run() {
             surface_tip.setOnTouchListener(new myTouchEventListener());
             mGifDrawable.recycle();
-
-            media_iv.setVisibility(View.GONE);
+            SVDraw.location_startX = SVDraw.start_X =0;
+            SVDraw.location_startY = SVDraw.start_Y=0;
+            SVDraw.location_endX = SVDraw.end_X=0;
+            SVDraw.location_endY = SVDraw.end_Y =0;
+            media_ll.setVisibility(View.GONE);
             surface_tip.setVisibility(View.VISIBLE);
             show_flag = true;
             takePhoto_flag = true;
@@ -166,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         surface_tip = (SVDraw) findViewById(R.id.surface_tip);
         timeView = (TextView) findViewById(R.id.tv_time);
         media_iv = (GifImageView) findViewById(R.id.media_iv);
+        media_ll = (LinearLayout) findViewById(R.id.media_ll);
+        media_text = (TextView) findViewById(R.id.media_text);
 
 
     }
@@ -431,70 +437,82 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-//            if (GifView.isPlaying) {
-//                return false;
-//            }
-//            if (mGifDrawable.isRunning()) {
-//                return false;
-//            }
-            WindowManager wm = (WindowManager) MainActivity.this
-                    .getSystemService(Context.WINDOW_SERVICE);
-            int width = wm.getDefaultDisplay().getWidth();
-            int height = wm.getDefaultDisplay().getHeight();
-            switch (screenOritation) {
-                case Constants.TOP:
-                    if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
-                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+
+//            WindowManager wm = (WindowManager) MainActivity.this
+//                    .getSystemService(Context.WINDOW_SERVICE);
+//            int width = wm.getDefaultDisplay().getWidth();
+//            int height = wm.getDefaultDisplay().getHeight();
+            if (event.getX()>SVDraw.location_startX&&event.getX()<SVDraw.location_endX&&event.getY()>SVDraw.location_startY&&event.getY()<SVDraw.location_endY){
+                ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
                         if (show_flag) {
                             surface_tip.setVisibility(View.GONE);
-                            media_iv.setVisibility(View.VISIBLE);
+                            media_ll.setVisibility(View.VISIBLE);
+                            media_ll.setOrientation(LinearLayout.VERTICAL);
                             show_flag = false;
                             showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
 
 
                         }
-                    }
-                    break;
-                case Constants.BOTTOM:
-
-                    if (event.getX() > (width - SVDraw.end_X) && event.getX() < (width - SVDraw.start_X) && event.getY() > (height - SVDraw.end_Y) && event.getY() < (height - SVDraw.start_Y)) {
-                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-                        if (show_flag) {
-                            surface_tip.setVisibility(View.GONE);
-                            media_iv.setVisibility(View.VISIBLE);
-                            show_flag = false;
-                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-
-
-                        }
-                    }
-                    break;
-                case Constants.LEFT:
-                    if (event.getX() > SVDraw.start_Y && event.getX() < SVDraw.end_Y && event.getY() > (width - SVDraw.end_X) && event.getY() < (width - SVDraw.start_X)) {
-                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-                        if (show_flag) {
-                            surface_tip.setVisibility(View.GONE);
-                            media_iv.setVisibility(View.VISIBLE);
-                            show_flag = false;
-                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-                        }
-
-                    }
-                    break;
-                case Constants.RIGHT:
-                    if (event.getX() > (height - SVDraw.end_Y) && event.getX() < (height - SVDraw.start_Y) && event.getY() > SVDraw.start_X && event.getY() < SVDraw.end_X) {
-                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-                        if (show_flag) {
-                            surface_tip.setVisibility(View.GONE);
-                            media_iv.setVisibility(View.VISIBLE);
-                            show_flag = false;
-                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-                        }
-
-                    }
-                    break;
 
             }
+//            switch (screenOritation) {
+//                case Constants.TOP:
+//                    if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
+//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+//                        if (show_flag) {
+//                            surface_tip.setVisibility(View.GONE);
+//                            media_ll.setVisibility(View.VISIBLE);
+//                            media_ll.setOrientation(LinearLayout.VERTICAL);
+//                            show_flag = false;
+//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+//
+//
+//                        }
+//                    }
+//                    break;
+//                case Constants.BOTTOM:
+//
+//                    if (event.getX() > (width - SVDraw.end_X) && event.getX() < (width - SVDraw.start_X) && event.getY() > (height - SVDraw.end_Y) && event.getY() < (height - SVDraw.start_Y)) {
+//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+//                        if (show_flag) {
+//                            surface_tip.setVisibility(View.GONE);
+//                            media_ll.setVisibility(View.VISIBLE);
+//                            media_ll.setOrientation(LinearLayout.VERTICAL);
+//                            show_flag = false;
+//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+//
+//
+//                        }
+//                    }
+//                    break;
+//                case Constants.LEFT:
+//                    if (event.getX() > SVDraw.start_Y && event.getX() < SVDraw.end_Y && event.getY() > (width - SVDraw.end_X) && event.getY() < (width - SVDraw.start_X)) {
+//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+//                        if (show_flag) {
+//                            surface_tip.setVisibility(View.GONE);
+//                            media_ll.setVisibility(View.VISIBLE);
+//                            media_ll.setOrientation(LinearLayout.HORIZONTAL);
+//                            show_flag = false;
+//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+//                        }
+//
+//                    }
+//                    break;
+//                case Constants.RIGHT:
+//                    if (event.getX() > (height - SVDraw.end_Y) && event.getX() < (height - SVDraw.start_Y) && event.getY() > SVDraw.start_X && event.getY() < SVDraw.end_X) {
+//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
+//                        if (show_flag) {
+//                            surface_tip.setVisibility(View.GONE);
+//                            media_ll.setVisibility(View.VISIBLE);
+//                            media_ll.setOrientation(LinearLayout.HORIZONTAL);
+//                            show_flag = false;
+//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+//                        }
+//
+//                    }
+//                    break;
+//
+//            }
 
             return false;
         }
@@ -513,13 +531,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //        media_iv.setX(startX);
 //        media_iv.setY(startY);
 
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) media_iv.getLayoutParams();
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
 
         if (isScreenOriatationPortrait(MainActivity.this)) {
             params.width = width;
             media_iv.setLayoutParams(params);
         } else {
-            params.height = height;
+            params.height = width;
             media_iv.setLayoutParams(params);
         }
 
@@ -530,10 +548,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                     mGifDrawable = new GifDrawable(getResources(),R.mipmap.s3);
                     media_iv.setImageDrawable(mGifDrawable);
                     mGifDrawable.setSpeed(1.0f);
+
                     mGifDrawable.addAnimationListener(this);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                media_text.setText("发动机");
                 break;
             case 2:
                 try {
@@ -544,25 +565,38 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+              //  media_text.setText("启动器");
                 break;
+
         }
 
         switch (screenOritation) {
             case Constants.TOP:
+//                media_ll.setOrientation(LinearLayout.VERTICAL);
                 break;
             case Constants.LEFT:
-                media_iv.setRotation(-90);
-                L.e("size===", media_iv.getHeight() + "");
-                media_iv.setTranslationX(-media_iv.getWidth());
+                media_ll.setRotation(-90);
+//                media_ll.setTranslationX(-media_iv.getWidth());
+//                media_text.setRotation(-90);
+//                media_text.setTranslationX(-media_iv.getWidth());
+//                media_ll.setOrientation(LinearLayout.HORIZONTAL);
                 break;
             case Constants.RIGHT:
-                media_iv.setRotation(90);
-                media_iv.setTranslationY(-media_iv.getWidth());
+                media_ll.setRotation(90);
+//                media_ll.setTranslationX(media_iv.getHeight());
+//                media_text.setRotation(90);
+//                media_text.setTranslationY(-media_iv.getWidth());
+//                media_ll.setOrientation(LinearLayout.HORIZONTAL);
+//                media_text.setGravity(Gravity.CENTER_VERTICAL);
                 break;
             case Constants.BOTTOM:
-                media_iv.setRotation(180);
-                media_iv.setTranslationX(-media_iv.getWidth());
-                media_iv.setTranslationY(- media_iv.getHeight());
+                media_ll.setRotation(180);
+//                media_ll.setTranslationX(-media_iv.getWidth());
+//                media_ll.setTranslationY(- media_iv.getHeight());
+//                media_text.setRotation(180);
+//                media_text.setTranslationX(-media_iv.getWidth());
+//                media_text.setTranslationY(-media_iv.getHeight());
+                media_ll.setOrientation(LinearLayout.VERTICAL);
                 break;
 
 

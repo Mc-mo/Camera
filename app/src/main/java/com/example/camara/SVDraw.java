@@ -36,6 +36,10 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
     public static float end_Y;
     public static float end_X;
 
+    public static float location_startX;
+    public static float location_startY;
+    public static float location_endX;
+    public static float location_endY;
 
 
     public SVDraw(Context context, AttributeSet attrs) {
@@ -110,26 +114,39 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
 
             switch (orientation) {
                 case Constants.TOP:
+                    location_startX = start_X;
+                    location_startY = start_Y;
+                    location_endX = end_X;
+                    location_endY = end_Y;
                     break;
                 case Constants.LEFT:
                     canvas.rotate(-90);
                     canvas.translate(-mHeight, 0);
-
                     widthScare = widthScare_LR;
                     heighScare = heighScare_LR;
                     L.e("左横屏绘制  Constants.height" + Constants.height);
-
+                    location_startX = end_X - (end_Y - start_Y);
+                    location_startY = start_Y;
+                    location_endX = end_X;
+                    location_endY = start_Y + (end_X - start_X);
                     break;
                 case Constants.BOTTOM:
                     canvas.rotate(180);
                     canvas.translate(-mWidth, -mHeight);
+                    location_startX = start_X;
+                    location_startY = start_Y;
+                    location_endX = end_X;
+                    location_endY = end_Y;
                     break;
                 case Constants.RIGHT:
                     canvas.rotate(90);
                     canvas.translate(0, -mWidth);
-
                     widthScare = widthScare_LR;
                     heighScare = heighScare_LR;
+                    location_startX = start_X;
+                    location_startY = start_Y;
+                    location_endX = end_Y;
+                    location_endY = end_X;
 
                     L.e("右横屏绘制 Constants.height" + Constants.height);
                     break;
@@ -162,7 +179,6 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
         }
 
     }
-
 
 
 }

@@ -23,13 +23,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <pl.droidsonroids.gif.GifImageView
-            android:id="@+id/media_iv"
+        <LinearLayout
+            android:id="@+id/media_ll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
-            />
+            android:orientation="vertical"
+            android:visibility="gone">
+            <pl.droidsonroids.gif.GifImageView
+                android:id="@+id/media_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                />
+            <TextView
+                android:id="@+id/media_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FF0000"
+                android:textSize="22sp"
+                android:layout_gravity="center"
+                />
+        </LinearLayout>
+
 
 
     </FrameLayout>

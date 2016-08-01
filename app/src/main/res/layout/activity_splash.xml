@@ -5,11 +5,12 @@
     android:background="@color/colorPrimary"
     android:padding="50dp">
 
+
     <Button
         android:id="@+id/start"
         android:layout_width="match_parent"
-        android:layout_above="@+id/test"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/test"
         android:layout_marginBottom="20dp"
         android:background="@drawable/shape_botton_background"
         android:text="开始" />
@@ -18,8 +19,8 @@
         android:id="@+id/test"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/shape_botton_background"
         android:text="测试">
 

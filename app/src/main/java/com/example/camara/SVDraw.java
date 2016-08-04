@@ -114,10 +114,7 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
 
             switch (orientation) {
                 case Constants.TOP:
-                    location_startX = start_X;
-                    location_startY = start_Y;
-                    location_endX = end_X;
-                    location_endY = end_Y;
+
                     break;
                 case Constants.LEFT:
                     canvas.rotate(-90);
@@ -125,28 +122,19 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
                     widthScare = widthScare_LR;
                     heighScare = heighScare_LR;
                     L.e("左横屏绘制  Constants.height" + Constants.height);
-                    location_startX = end_X - (end_Y - start_Y);
-                    location_startY = start_Y;
-                    location_endX = end_X;
-                    location_endY = start_Y + (end_X - start_X);
+
                     break;
                 case Constants.BOTTOM:
                     canvas.rotate(180);
                     canvas.translate(-mWidth, -mHeight);
-                    location_startX = start_X;
-                    location_startY = start_Y;
-                    location_endX = end_X;
-                    location_endY = end_Y;
+
                     break;
                 case Constants.RIGHT:
                     canvas.rotate(90);
                     canvas.translate(0, -mWidth);
                     widthScare = widthScare_LR;
                     heighScare = heighScare_LR;
-                    location_startX = start_X;
-                    location_startY = start_Y;
-                    location_endX = end_Y;
-                    location_endY = end_X;
+
 
                     L.e("右横屏绘制 Constants.height" + Constants.height);
                     break;
@@ -164,6 +152,12 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
                     end_X = (float) ((locationBean.getX() + locationBean.getWidth()) * widthScare);
                     end_Y = (float) ((locationBean.getY() + locationBean.getHeight()) * heighScare);
                     canvas.drawRect(start_X, start_Y, end_X, end_Y, mPaint);
+                   // location(orientation,start_X,start_Y,end_X,end_Y);
+                    L.e("location", "start_x=" + start_X + "startY=" + start_Y + "end+X=" + end_X
+                            + "endy=" + end_Y + "location_startX=" + location_startX +
+                            "location_startY=" + location_startY + "location_endX=" +
+                            location_endX + "location_endY=" + location_endY);
+
                 }
             }
 
@@ -178,6 +172,40 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
             mSurfaceHolder.unlockCanvasAndPost(canvas);
         }
 
+    }
+
+    public void location(int orientation,float start_x,float start_Y,float end_X,float end_Y){
+        switch (orientation) {
+            case Constants.TOP:
+                location_startX = start_x;
+                location_startY = start_Y;
+                location_endX = end_X;
+                location_endY = end_Y;
+                break;
+            case Constants.LEFT:
+                location_startX = end_X - (end_Y - start_Y);
+                location_startY = start_Y;
+                location_endX = end_X;
+                location_endY = start_Y + (end_X - start_x);
+                break;
+            case Constants.BOTTOM:
+
+                location_startX = start_x;
+                location_startY = start_Y;
+                location_endX = end_X;
+                location_endY = end_Y;
+                break;
+            case Constants.RIGHT:
+
+                location_startX = start_x;
+                location_startY = start_Y;
+                location_endX = end_Y;
+                location_endY = end_X;
+
+                break;
+            default:
+                break;
+        }
     }
 
 

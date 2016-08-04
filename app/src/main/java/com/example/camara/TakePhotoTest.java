@@ -1,6 +1,7 @@
 package com.example.camara;
 
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Animatable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -10,13 +11,17 @@ import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.camara.utils.Constants;
 import com.example.camara.utils.ImageUtils;
 import com.example.camara.utils.Utils;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.ControllerListener;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.image.ImageInfo;
 import com.zhuchudong.toollibrary.AppUtils;
 import com.zhuchudong.toollibrary.L;
 import com.zhuchudong.toollibrary.StatusBarUtil;
@@ -32,17 +37,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
-import pl.droidsonroids.gif.AnimationListener;
-import pl.droidsonroids.gif.GifDrawable;
-import pl.droidsonroids.gif.GifImageView;
 
-public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener, AnimationListener {
+public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener{
     //宽度450
 
     int id;
     Camera camera;
     SurfaceHolder holder;
-    GifImageView media_iv;
+//    GifImageView media_iv;
     SurfaceView surface_camera;
     SVDraw surface_tip;
     public int screenOritation = 60;
@@ -53,13 +55,19 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     public OrientationEventListener mOrientationListener;
     private TextView timeView;
     StringBuffer tv_string = new StringBuffer();
-    private GifDrawable mGifDrawable;
+//    private GifDrawable mGifDrawable;
     TextView media_tv;
     LinearLayout media_ll;
+    SimpleDraweeView media_iv;
+    Animatable animation;
+    DraweeController draweeController;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fresco.initialize(this);
         setContentView(R.layout.activity_main);
         initView();
 
@@ -101,7 +109,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     private void initView() {
         StatusBarUtil.setColor(TakePhotoTest.this, getResources().getColor(R.color.colorPrimary));
         findViewById(R.id.btn_linearlayout).setVisibility(View.VISIBLE);
-        media_iv = (GifImageView) findViewById(R.id.media_iv);
+        media_iv = (SimpleDraweeView) findViewById(R.id.media_iv);
         surface_camera = (SurfaceView) findViewById(R.id.surface_camera);
         surface_tip = (SVDraw) findViewById(R.id.surface_tip);
         findViewById(R.id.btn_takepicture).setOnClickListener(this);
@@ -217,12 +225,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
         camera.cancelAutoFocus();
     }
 
-    @Override
-    public void onAnimationCompleted(int loopNumber) {
-        media_ll.setVisibility(View.GONE);
-        surface_tip.setVisibility(View.VISIBLE);
-        show_flag = true;
-    }
+
 
 
     private final class SecondCallback implements Camera.PictureCallback {
@@ -371,25 +374,49 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     }
 
     private void showImg(float startX, float startY) {
-//        media_iv.setX(startX);
-//        media_iv.setY(startY);
-//        media_iv.setMovieResource(R.mipmap.s3);
-//        L.e(media_iv.isPaused()+"");
-//        WindowManager wm = (WindowManager) TakePhotoTest.this
-//                .getSystemService(Context.WINDOW_SERVICE);
-//        int width = wm.getDefaultDisplay().getWidth();
-//        int height = wm.getDefaultDisplay().getHeight();
-//        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
-//
-        try {
-            mGifDrawable = new GifDrawable(getResources(),R.mipmap.s3);
-            media_iv.setImageDrawable(mGifDrawable);
-            mGifDrawable.setSpeed(1.0f);
-            media_iv.setScaleType(ImageView.ScaleType.MATRIX);
-            mGifDrawable.addAnimationListener(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        LinearLayout.LayoutParams laParams;
+
+
+        media_iv.setAspectRatio(1.33f);
+        draweeController = Fresco.newDraweeControllerBuilder()
+                .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
+                .setAutoPlayAnimations(true)
+                .setControllerListener(new ControllerListener<ImageInfo>() {
+
+                    @Override
+                    public void onSubmit(String id, Object callerContext) {
+
+                    }
+
+                    @Override
+                    public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+
+                    }
+
+                    @Override
+                    public void onIntermediateImageSet(String id, ImageInfo imageInfo) {
+
+                    }
+
+                    @Override
+                    public void onIntermediateImageFailed(String id, Throwable throwable) {
+
+                    }
+
+                    @Override
+                    public void onFailure(String id, Throwable throwable) {
+
+                    }
+
+                    @Override
+                    public void onRelease(String id) {
+
+                    }
+                })
+                .build();
+        media_iv.setController(draweeController);
+
+
 
 
         switch (screenOritation){
@@ -397,10 +424,18 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 L.e(" Constants.TOP:"+ Constants.TOP);
                 break;
             case  Constants.LEFT:
+                laParams=(LinearLayout.LayoutParams)media_iv.getLayoutParams();
+                laParams.height = 320;
+                laParams.width = LinearLayout.LayoutParams.WRAP_CONTENT;
+                media_iv.setLayoutParams(laParams);
+                media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(-90);
                 L.e(" Constants.LEFT:"+ Constants.LEFT);
                 break;
             case  Constants.RIGHT:
+                laParams=(LinearLayout.LayoutParams)media_iv.getLayoutParams();
+                laParams.height = 320;
+                media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(90);
                 L.e(" Constants.RIGHT:"+ Constants.RIGHT);
                 break;

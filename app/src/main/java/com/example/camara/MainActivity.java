@@ -1,7 +1,7 @@
 package com.example.camara;
 
-import android.content.Context;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Animatable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -12,7 +12,6 @@ import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,6 +19,11 @@ import com.example.camara.utils.Constants;
 import com.example.camara.utils.CrashHandler;
 import com.example.camara.utils.ImageUtils;
 import com.example.camara.utils.Utils;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.ControllerListener;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.image.ImageInfo;
 import com.zhuchudong.toollibrary.AppUtils;
 import com.zhuchudong.toollibrary.L;
 import com.zhuchudong.toollibrary.StatusBarUtil;
@@ -37,15 +41,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import okhttp3.Call;
-import pl.droidsonroids.gif.AnimationListener;
-import pl.droidsonroids.gif.GifDrawable;
-import pl.droidsonroids.gif.GifImageView;
 
-public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener, AnimationListener {
+public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, View
+        .OnClickListener{
     private static MainActivity instance;
     //宽度450
     TimerTask task;
     int id;
+    byte[] compressDada;
     long netTime;
     long processTime;
     long takephotoTime;
@@ -62,11 +65,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     LinearLayout media_ll;
     TextView media_text;
     boolean takePhoto_flag = true;
+    SimpleDraweeView media_iv;
+    Animatable animation;
+    DraweeController draweeController;
 
-//    LocalBroadcastReceiver localReceiver;
-    GifImageView media_iv;
+//    GifImageView media_iv;
     public int screenOritation = 60;
-    private GifDrawable mGifDrawable;
+
     Handler handler = new Handler();
 
     Camera.PictureCallback currentCallBack;
@@ -76,11 +81,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         @Override
         public void run() {
             surface_tip.setOnTouchListener(new myTouchEventListener());
-            mGifDrawable.recycle();
-            SVDraw.location_startX = SVDraw.start_X =0;
-            SVDraw.location_startY = SVDraw.start_Y=0;
-            SVDraw.location_endX = SVDraw.end_X=0;
-            SVDraw.location_endY = SVDraw.end_Y =0;
+            SVDraw.location_startX = SVDraw.start_X = 0;
+            SVDraw.location_startY = SVDraw.start_Y = 0;
+            SVDraw.location_endX = SVDraw.end_X = 0;
+            SVDraw.location_endY = SVDraw.end_Y = 0;
             media_ll.setVisibility(View.GONE);
             surface_tip.setVisibility(View.VISIBLE);
             show_flag = true;
@@ -89,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 @Override
                 public void run() {
                     if (camera != null) {
-                        // camera.startPreview();
                         camera.takePicture(null, null, new FirstCallback());
                     }
                 }
@@ -100,9 +103,18 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     };
 
+    Runnable runnable2 = new Runnable() {
+        @Override
+        public void run() {
+            OkHttpUtils.postBytes().url(Constants.url).data(compressDada).build().connTimeOut
+                    (5000).enqueue(firstcallback);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fresco.initialize(this);
         setContentView(R.layout.activity_main);
         initView();
 
@@ -113,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         initOrientationListener();
 
-//        initReceiver();
 
         CrashHandler.getInstance().init(getApplicationContext());
 
@@ -127,12 +138,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         return instance;
     }
 
-    private void initReceiver() {
-//        localReceiver = new LocalBroadcastReceiver();
 
-//        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, new IntentFilter("ACTION_LOCAL_SEND"));
-
-    }
 
     @Override
     protected void onStart() {
@@ -169,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         surface_camera = (SurfaceView) findViewById(R.id.surface_camera);
         surface_tip = (SVDraw) findViewById(R.id.surface_tip);
         timeView = (TextView) findViewById(R.id.tv_time);
-        media_iv = (GifImageView) findViewById(R.id.media_iv);
+        media_iv = (SimpleDraweeView) findViewById(R.id.media_iv);
         media_ll = (LinearLayout) findViewById(R.id.media_ll);
         media_text = (TextView) findViewById(R.id.media_text);
 
@@ -248,7 +254,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
 
 
-        List<Camera.Size> picturesizesScale = Utils.getScaleSize(picturesizes, (float) previewMaxSize.width / (float) previewMaxSize.height);
+        List<Camera.Size> picturesizesScale = Utils.getScaleSize(picturesizes, (float)
+                previewMaxSize.width / (float) previewMaxSize.height);
         Camera.Size pictureMaxSize = Utils.getMiddleSize(picturesizesScale, previewMaxSize);
         if (pictureMaxSize != null) {
             parameters.setPictureSize(pictureMaxSize.width, pictureMaxSize.height);
@@ -293,38 +300,29 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     }
 
-    @Override
-    public void onAnimationCompleted(int loopNumber) {
-       handler.postDelayed(runnable,2000);
 
-    }
 
     private final class FirstCallback implements Camera.PictureCallback {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             camera.startPreview();
-            tv_string.append("拍照用时：" + (System.currentTimeMillis() - takephotoTime) + "ms").append("\n");
+            tv_string.append("拍照用时：" + (System.currentTimeMillis() - takephotoTime) + "ms")
+                    .append("\n");
             timeView.setText(tv_string);
             processphotoTime = System.currentTimeMillis();
-            byte[] compressDada = ImageUtils.processBitmapBytesSmaller2(data, Constants.requestWidth, screenOritation);
-//            new UploadImageTask(Constants.url, compressDada, surface_tip, screenOritation).execute();
-            tv_string.append("处理图片用时：" + (System.currentTimeMillis() - processphotoTime) + "ms").append("\n");
-            tv_string.append("总处理用时：" + (System.currentTimeMillis() - processTime) + "ms").append("\n");
+            compressDada = ImageUtils.processBitmapBytesSmaller2(data, Constants
+                    .requestWidth, screenOritation);
+//            new UploadImageTask(Constants.url, compressDada, surface_tip, screenOritation)
+// .execute();
+            tv_string.append("处理图片用时：" + (System.currentTimeMillis() - processphotoTime) + "ms")
+                    .append("\n");
+            tv_string.append("总处理用时：" + (System.currentTimeMillis() - processTime) + "ms").append
+                    ("\n");
             timeView.setText(tv_string);
             netTime = System.currentTimeMillis();
-//            ToastUtils.showToast(MainActivity.this, error_count + "");
-//            if (error_count >= 1) {
-//                if (media_iv != null) {
-//                    media_iv = null;
-//                    media_iv.setVisibility(View.GONE);
-//                    surface_tip.setVisibility(View.VISIBLE);
-//                    L.e("onTouch---false");
-//                    show_flag = true;
-//                }
-//
-//            }
+
             if (takePhoto_flag) {
-                OkHttpUtils.postBytes().url(Constants.url).data(compressDada).build().connTimeOut(5000).enqueue(firstcallback);
+                handler.postDelayed(runnable2,1000);
             }
 
         }
@@ -339,11 +337,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 return;
             }
 
-            tv_string.append("请求用时：" + (System.currentTimeMillis() - netTime) + "ms").append("\n").append("\n");
+            tv_string.append("请求用时：" + (System.currentTimeMillis() - netTime) + "ms").append
+                    ("\n").append("\n");
             timeView.setText(tv_string);
             L.e(System.currentTimeMillis() - netTime + "ms");
             L.e("网络请求出错 " + e.toString());
-            ToastUtils.showToast(MainActivity.this, "网络请求出错 " + (System.currentTimeMillis() - netTime) + "ms");
+            ToastUtils.showToast(MainActivity.this, "网络请求出错 " + (System.currentTimeMillis() -
+                    netTime) + "ms");
             netTime = System.currentTimeMillis();
             processTime = System.currentTimeMillis();
             takephotoTime = System.currentTimeMillis();
@@ -366,15 +366,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
                 JSONArray locations = response.optJSONArray("bounding_rects");
 
-//                if (locations.length()==0){
-//
-//                    error_count++;
-//                    if (error_count>=1){
-//                        handler.post(runnable);
-//                    }
-//                }else {
-//                    error_count=0;
-//                }
+
 
                 ArrayList<LocationBean> locationList = new ArrayList();
                 if (locations != null && locations.length() > 0) {
@@ -438,81 +430,21 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         @Override
         public boolean onTouch(View v, MotionEvent event) {
 
-//            WindowManager wm = (WindowManager) MainActivity.this
-//                    .getSystemService(Context.WINDOW_SERVICE);
-//            int width = wm.getDefaultDisplay().getWidth();
-//            int height = wm.getDefaultDisplay().getHeight();
-            if (event.getX()>SVDraw.location_startX&&event.getX()<SVDraw.location_endX&&event.getY()>SVDraw.location_startY&&event.getY()<SVDraw.location_endY){
+            if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X &&
+                    event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
                 ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-                        if (show_flag) {
-                            surface_tip.setVisibility(View.GONE);
-                            media_ll.setVisibility(View.VISIBLE);
-                            media_ll.setOrientation(LinearLayout.VERTICAL);
-                            show_flag = false;
-                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+                if (show_flag) {
+                    surface_tip.setVisibility(View.GONE);
+                    media_ll.setVisibility(View.VISIBLE);
+                    media_ll.setOrientation(LinearLayout.VERTICAL);
+                    show_flag = false;
+                    showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
 
 
-                        }
+                }
 
             }
-//            switch (screenOritation) {
-//                case Constants.TOP:
-//                    if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
-//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-//                        if (show_flag) {
-//                            surface_tip.setVisibility(View.GONE);
-//                            media_ll.setVisibility(View.VISIBLE);
-//                            media_ll.setOrientation(LinearLayout.VERTICAL);
-//                            show_flag = false;
-//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-//
-//
-//                        }
-//                    }
-//                    break;
-//                case Constants.BOTTOM:
-//
-//                    if (event.getX() > (width - SVDraw.end_X) && event.getX() < (width - SVDraw.start_X) && event.getY() > (height - SVDraw.end_Y) && event.getY() < (height - SVDraw.start_Y)) {
-//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-//                        if (show_flag) {
-//                            surface_tip.setVisibility(View.GONE);
-//                            media_ll.setVisibility(View.VISIBLE);
-//                            media_ll.setOrientation(LinearLayout.VERTICAL);
-//                            show_flag = false;
-//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-//
-//
-//                        }
-//                    }
-//                    break;
-//                case Constants.LEFT:
-//                    if (event.getX() > SVDraw.start_Y && event.getX() < SVDraw.end_Y && event.getY() > (width - SVDraw.end_X) && event.getY() < (width - SVDraw.start_X)) {
-//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-//                        if (show_flag) {
-//                            surface_tip.setVisibility(View.GONE);
-//                            media_ll.setVisibility(View.VISIBLE);
-//                            media_ll.setOrientation(LinearLayout.HORIZONTAL);
-//                            show_flag = false;
-//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-//                        }
-//
-//                    }
-//                    break;
-//                case Constants.RIGHT:
-//                    if (event.getX() > (height - SVDraw.end_Y) && event.getX() < (height - SVDraw.start_Y) && event.getY() > SVDraw.start_X && event.getY() < SVDraw.end_X) {
-//                        ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
-//                        if (show_flag) {
-//                            surface_tip.setVisibility(View.GONE);
-//                            media_ll.setVisibility(View.VISIBLE);
-//                            media_ll.setOrientation(LinearLayout.HORIZONTAL);
-//                            show_flag = false;
-//                            showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
-//                        }
-//
-//                    }
-//                    break;
-//
-//            }
+
 
             return false;
         }
@@ -521,82 +453,147 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void showImg(float startX, float startY, float endX, float endY) {
+        LinearLayout.LayoutParams laParams;
         surface_tip.setOnTouchListener(null);
-        WindowManager wm = (WindowManager) MainActivity.this
-                .getSystemService(Context.WINDOW_SERVICE);
+//        WindowManager wm = (WindowManager) MainActivity.this
+//                .getSystemService(Context.WINDOW_SERVICE);
+//
+//        int width = wm.getDefaultDisplay().getWidth();
+//        int height = wm.getDefaultDisplay().getHeight();
+//        L.e("size==", "width=" + width + "height=" + height);
 
-        int width = wm.getDefaultDisplay().getWidth();
-        int height = wm.getDefaultDisplay().getHeight();
-        L.e("size==", "width=" + width + "height=" + height);
-//        media_iv.setX(startX);
-//        media_iv.setY(startY);
-
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
-
-        if (isScreenOriatationPortrait(MainActivity.this)) {
-            params.width = width;
-            media_iv.setLayoutParams(params);
-        } else {
-            params.height = width;
-            media_iv.setLayoutParams(params);
-        }
-
-//        media_iv.setPaused(false);
         switch (id) {
             case 1:
-                try {
-                    mGifDrawable = new GifDrawable(getResources(),R.mipmap.s3);
-                    media_iv.setImageDrawable(mGifDrawable);
-                    mGifDrawable.setSpeed(1.0f);
 
-                    mGifDrawable.addAnimationListener(this);
+                media_iv.setAspectRatio(1.33f);
+                 draweeController = Fresco.newDraweeControllerBuilder()
+                        .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
+                        .setAutoPlayAnimations(true)
+                        .setControllerListener(new ControllerListener<ImageInfo>() {
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                            @Override
+                            public void onSubmit(String id, Object callerContext) {
+
+                            }
+
+                            @Override
+                            public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+
+                            }
+
+                            @Override
+                            public void onIntermediateImageSet(String id, ImageInfo imageInfo) {
+
+                            }
+
+                            @Override
+                            public void onIntermediateImageFailed(String id, Throwable throwable) {
+
+                            }
+
+                            @Override
+                            public void onFailure(String id, Throwable throwable) {
+
+                            }
+
+                            @Override
+                            public void onRelease(String id) {
+
+                            }
+                        })
+                        .build();
+
+                media_iv.setController(draweeController);
+
                 media_text.setText("发动机");
                 break;
             case 2:
-                try {
-                    mGifDrawable = new GifDrawable(getResources(),R.mipmap.s2);
-                    media_iv.setImageDrawable(mGifDrawable);
-                    mGifDrawable.setSpeed(1.0f);
-                    mGifDrawable.addAnimationListener(this);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-              //  media_text.setText("启动器");
+                media_iv.setAspectRatio(1.33f);
+                draweeController = Fresco.newDraweeControllerBuilder()
+                        .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
+                        .setAutoPlayAnimations(true)
+                        .setControllerListener(new ControllerListener<ImageInfo>() {
+
+                            @Override
+                            public void onSubmit(String id, Object callerContext) {
+
+                            }
+
+                            @Override
+                            public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+
+                            }
+
+                            @Override
+                            public void onIntermediateImageSet(String id, ImageInfo imageInfo) {
+
+                            }
+
+                            @Override
+                            public void onIntermediateImageFailed(String id, Throwable throwable) {
+
+                            }
+
+                            @Override
+                            public void onFailure(String id, Throwable throwable) {
+
+                            }
+
+                            @Override
+                            public void onRelease(String id) {
+
+                            }
+                        })
+                        .build();
+                media_iv.setController(draweeController);
+                media_text.setText("启动机");
                 break;
 
         }
 
+        task = new TimerTask() {
+
+            @Override
+            public void run() {
+                animation = draweeController.getAnimatable();
+                if (animation!=null){
+                    if (!animation.isRunning()){
+                        animation.stop();
+
+                        handler.postDelayed(runnable,2000);
+                    }
+                }
+
+            }
+        };
+        if (timer == null) {
+            timer = new Timer();
+        }
+
+        timer.schedule(task,100,100);
+
+
         switch (screenOritation) {
             case Constants.TOP:
-//                media_ll.setOrientation(LinearLayout.VERTICAL);
+
                 break;
             case Constants.LEFT:
+//                laParams=(LinearLayout.LayoutParams)media_iv.getLayoutParams();
+//                laParams.height = 320;
+//                media_iv.setAspectRatio(1.33f);
+
                 media_ll.setRotation(-90);
-//                media_ll.setTranslationX(-media_iv.getWidth());
-//                media_text.setRotation(-90);
-//                media_text.setTranslationX(-media_iv.getWidth());
-//                media_ll.setOrientation(LinearLayout.HORIZONTAL);
+
                 break;
             case Constants.RIGHT:
+
                 media_ll.setRotation(90);
-//                media_ll.setTranslationX(media_iv.getHeight());
-//                media_text.setRotation(90);
-//                media_text.setTranslationY(-media_iv.getWidth());
-//                media_ll.setOrientation(LinearLayout.HORIZONTAL);
-//                media_text.setGravity(Gravity.CENTER_VERTICAL);
+
                 break;
             case Constants.BOTTOM:
+
                 media_ll.setRotation(180);
-//                media_ll.setTranslationX(-media_iv.getWidth());
-//                media_ll.setTranslationY(- media_iv.getHeight());
-//                media_text.setRotation(180);
-//                media_text.setTranslationX(-media_iv.getWidth());
-//                media_text.setTranslationY(-media_iv.getHeight());
-                media_ll.setOrientation(LinearLayout.VERTICAL);
+
                 break;
 
 
@@ -607,27 +604,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
 
-//    public class LocalBroadcastReceiver extends BroadcastReceiver {
-//
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//
-//        }
-//    }
 
-    /**
-     * 返回当前屏幕是否为竖屏。
-     *
-     * @param context
-     * @return 当且仅当当前屏幕为竖屏时返回true, 否则返回false。
-     */
-    public static boolean isScreenOriatationPortrait(Context context) {
-        if (context.getResources().getConfiguration().orientation == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+
 
 
 }

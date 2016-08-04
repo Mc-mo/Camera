@@ -24,6 +24,7 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         L l=new L();
         l.startWriteLogToSdcard(getExternalCacheDir()+"log.txt",true);
         setContentView(R.layout.activity_splash);

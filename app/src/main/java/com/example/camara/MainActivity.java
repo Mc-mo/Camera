@@ -12,6 +12,7 @@ import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     SimpleDraweeView media_iv;
     Animatable animation;
     DraweeController draweeController;
-
+    ImageButton close_ib;
 //    GifImageView media_iv;
     public int screenOritation = 60;
 
@@ -178,8 +179,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         media_iv = (SimpleDraweeView) findViewById(R.id.media_iv);
         media_ll = (LinearLayout) findViewById(R.id.media_ll);
         media_text = (TextView) findViewById(R.id.media_text);
-
-
+        media_iv.setOnClickListener(this);
+        close_ib = (ImageButton) findViewById(R.id.close_ib);
+        close_ib.setOnClickListener(this);
     }
 
     public void initSchedule() {
@@ -297,6 +299,28 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void onClick(View v) {
+        animation = draweeController.getAnimatable();
+        switch (v.getId()){
+            case R.id.media_ll:
+                if (animation!=null){
+                    if (animation.isRunning()){
+                        animation.stop();
+
+                    }else {
+                        animation.start();
+                    }
+                }
+                break;
+            case R.id.close_ib:
+                if (animation!=null){
+                    if (animation.isRunning()){
+                        animation.stop();
+                        handler.post(runnable);
+                    }
+                }
+                break;
+        }
+
 
     }
 
@@ -546,6 +570,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                         })
                         .build();
                 media_iv.setController(draweeController);
+
                 media_text.setText("启动机");
                 break;
 

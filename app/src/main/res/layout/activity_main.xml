@@ -20,7 +20,9 @@
         <com.example.camara.SVDraw
             android:id="@+id/surface_tip"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+
+            />
 
         <LinearLayout
             android:id="@+id/media_ll"
@@ -47,6 +49,17 @@
                 android:textSize="22sp"
                 />
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/close_ib"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+
+            android:layout_gravity="right"
+            android:background="@mipmap/close_11"
+            android:visibility="gone"
+
+            />
 
 
     </FrameLayout>

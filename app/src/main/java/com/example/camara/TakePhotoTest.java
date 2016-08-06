@@ -5,12 +5,16 @@ import android.graphics.drawable.Animatable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -38,13 +42,14 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener{
+public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Callback, View
+        .OnClickListener {
     //宽度450
 
     int id;
     Camera camera;
     SurfaceHolder holder;
-//    GifImageView media_iv;
+    //    GifImageView media_iv;
     SurfaceView surface_camera;
     SVDraw surface_tip;
     public int screenOritation = 60;
@@ -55,14 +60,29 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     public OrientationEventListener mOrientationListener;
     private TextView timeView;
     StringBuffer tv_string = new StringBuffer();
-//    private GifDrawable mGifDrawable;
+    //    private GifDrawable mGifDrawable;
     TextView media_tv;
     LinearLayout media_ll;
     SimpleDraweeView media_iv;
     Animatable animation;
     DraweeController draweeController;
 
+    ImageButton close_ib;
+    Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            close_ib.setVisibility(View.GONE);
+            media_ll.setVisibility(View.GONE);
+            surface_tip.setVisibility(View.VISIBLE);
+            surface_tip.setOnTouchListener(new myTouchEventListener());
+            show_flag = true;
 
+
+        }
+
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,11 +135,13 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
         findViewById(R.id.btn_takepicture).setOnClickListener(this);
         findViewById(R.id.btn_again).setOnClickListener(this);
         timeView = (TextView) findViewById(R.id.tv_time);
-
+        close_ib = (ImageButton) findViewById(R.id.close_ib);
         surface_tip.setOnTouchListener(new myTouchEventListener());
         media_iv.setOnTouchListener(new myTouchEventListener());
         media_tv = (TextView) findViewById(R.id.media_text);
         media_ll = (LinearLayout) findViewById(R.id.media_ll);
+        media_ll.setOnClickListener(this);
+        close_ib.setOnClickListener(this);
     }
 
 
@@ -136,6 +158,26 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
             case R.id.btn_again:
                 surface_tip.clearDraw();
                 camera.startPreview();
+                break;
+            case R.id.media_ll:
+                L.e("animation.click()");
+                animation = draweeController.getAnimatable();
+                if (animation != null) {
+                    L.e("animation!=null");
+                    if (animation.isRunning()) {
+                        animation.stop();
+                    }
+                }
+                break;
+            case R.id.close_ib:
+                animation = draweeController.getAnimatable();
+                if (animation != null) {
+                    if (animation.isRunning()) {
+                        animation.stop();
+                        handler.post(runnable);
+                    }
+                }
+
                 break;
             default:
                 break;
@@ -186,7 +228,8 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
         }
 
 
-        List<Camera.Size> picturesizesScale = Utils.getScaleSize(picturesizes, (float) previewMaxSize.width / (float) previewMaxSize.height);
+        List<Camera.Size> picturesizesScale = Utils.getScaleSize(picturesizes, (float)
+                previewMaxSize.width / (float) previewMaxSize.height);
         Camera.Size pictureMaxSize = Utils.getMiddleSize(picturesizesScale, previewMaxSize);
         if (pictureMaxSize != null) {
             parameters.setPictureSize(pictureMaxSize.width, pictureMaxSize.height);
@@ -226,21 +269,23 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
     }
 
 
-
-
     private final class SecondCallback implements Camera.PictureCallback {
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             camera.stopPreview();
-            byte[] compressDada = ImageUtils.processBitmapBytesSmaller2(data, Constants.requestWidth, screenOritation);
+            byte[] compressDada = ImageUtils.processBitmapBytesSmaller2(data, Constants
+                    .requestWidth, screenOritation);
 
             Utils.savepicture(TakePhotoTest.this, compressDada);
-//            new UploadImageTask(Constants.url, compressDada, surface_tip, screenOritation).execute();
-            tv_string.append("处理用时：" + (System.currentTimeMillis() - processTime) + "ms").append("\n");
+//            new UploadImageTask(Constants.url, compressDada, surface_tip, screenOritation)
+// .execute();
+            tv_string.append("处理用时：" + (System.currentTimeMillis() - processTime) + "ms").append
+                    ("\n");
             timeView.setText(tv_string);
             netTime = System.currentTimeMillis();
-            OkHttpUtils.postBytes().url(Constants.url).data(compressDada).build().connTimeOut(5000).enqueue(secondCallback);
+            OkHttpUtils.postBytes().url(Constants.url).data(compressDada).build().connTimeOut
+                    (5000).enqueue(secondCallback);
             // surface_tip.setOnTouchListener(new myTouchEventListener());
         }
     }
@@ -253,11 +298,13 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 L.e("isTopActivity==false");
                 return;
             }
-            tv_string.append("请求用时：" + (System.currentTimeMillis() - netTime) + "ms").append("\n").append("\n");
+            tv_string.append("请求用时：" + (System.currentTimeMillis() - netTime) + "ms").append
+                    ("\n").append("\n");
             timeView.setText(tv_string);
             L.e(System.currentTimeMillis() - netTime + "ms");
             L.e("网络请求出错 " + e.toString());
-            ToastUtils.showToast(TakePhotoTest.this, "网络请求出错 " + (System.currentTimeMillis() - netTime) + "ms");
+            ToastUtils.showToast(TakePhotoTest.this, "网络请求出错 " + (System.currentTimeMillis() -
+                    netTime) + "ms");
             netTime = System.currentTimeMillis();
             processTime = System.currentTimeMillis();
         }
@@ -339,34 +386,22 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-//            if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
+//            if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() >
+// SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
 //            ToastUtils.showToast(this, "点击了绿色框内空间");
 
 //            }
 
             ToastUtils.showToast(TakePhotoTest.this, "touch");
             if (show_flag) {
+                close_ib.setVisibility(View.VISIBLE);
                 surface_tip.setVisibility(View.GONE);
                 media_ll.setVisibility(View.VISIBLE);
                 L.e("onTouch---true");
                 show_flag = false;
                 media_tv.setText("发动机");
                 showImg(SVDraw.start_X, SVDraw.start_Y);
-
-            } else {
-//                if (media_iv.isPaused()){
-//
-//                    media_iv.setMovie(null);
-//                   // media_iv=null;
-//                    media_iv.setVisibility(View.GONE);
-//                    surface_tip.setVisibility(View.VISIBLE);
-//                }
-//                media_iv.setVisibility(View.GONE);
-//                surface_tip.setVisibility(View.VISIBLE);
-//                L.e("onTouch---false");
-//                show_flag = true;
-//              //  showImg(SVDraw.start_X, SVDraw.start_Y);
-
+                surface_tip.setOnTouchListener(null);
             }
             return false;
         }
@@ -375,6 +410,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
     private void showImg(float startX, float startY) {
         LinearLayout.LayoutParams laParams;
+        FrameLayout.LayoutParams clParams;
 
 
         media_iv.setAspectRatio(1.33f);
@@ -389,7 +425,8 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                     }
 
                     @Override
-                    public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+                    public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable
+                            animatable) {
 
                     }
 
@@ -417,31 +454,44 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
         media_iv.setController(draweeController);
 
 
-
-
-        switch (screenOritation){
-            case  Constants.TOP:
-                L.e(" Constants.TOP:"+ Constants.TOP);
+        switch (screenOritation) {
+            case Constants.TOP:
+                L.e(" Constants.TOP:" + Constants.TOP);
                 break;
-            case  Constants.LEFT:
-                laParams=(LinearLayout.LayoutParams)media_iv.getLayoutParams();
+            case Constants.LEFT:
+                laParams = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
                 laParams.height = 320;
                 laParams.width = LinearLayout.LayoutParams.WRAP_CONTENT;
                 media_iv.setLayoutParams(laParams);
+
+                clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
+
+                clParams.gravity = Gravity.LEFT;
+                close_ib.setLayoutParams(clParams);
+                close_ib.setRotation(-90);
                 media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(-90);
-                L.e(" Constants.LEFT:"+ Constants.LEFT);
+                L.e(" Constants.LEFT:" + Constants.LEFT);
                 break;
-            case  Constants.RIGHT:
-                laParams=(LinearLayout.LayoutParams)media_iv.getLayoutParams();
+            case Constants.RIGHT:
+                laParams = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
                 laParams.height = 320;
+
+                clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
+                clParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+                close_ib.setLayoutParams(clParams);
+                close_ib.setRotation(-90);
+                close_ib.setTranslationY(-20);
                 media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(90);
-                L.e(" Constants.RIGHT:"+ Constants.RIGHT);
+                L.e(" Constants.RIGHT:" + Constants.RIGHT);
                 break;
-            case  Constants.BOTTOM:
+            case Constants.BOTTOM:
                 media_ll.setRotation(180);
-                L.e(" Constants.BOTTOM:"+ Constants.BOTTOM);
+                clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
+                clParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+                close_ib.setLayoutParams(clParams);
+                L.e(" Constants.BOTTOM:" + Constants.BOTTOM);
                 break;
 
 

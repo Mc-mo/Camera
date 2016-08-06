@@ -166,6 +166,8 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                     L.e("animation!=null");
                     if (animation.isRunning()) {
                         animation.stop();
+                    }else {
+                        animation.start();
                     }
                 }
                 break;
@@ -460,12 +462,10 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 break;
             case Constants.LEFT:
                 laParams = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
-                laParams.height = 320;
-                laParams.width = LinearLayout.LayoutParams.WRAP_CONTENT;
+                laParams.width = 320;
+                laParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
                 media_iv.setLayoutParams(laParams);
-
                 clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
-
                 clParams.gravity = Gravity.LEFT;
                 close_ib.setLayoutParams(clParams);
                 close_ib.setRotation(-90);
@@ -475,8 +475,8 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 break;
             case Constants.RIGHT:
                 laParams = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
-                laParams.height = 320;
-
+                laParams.width = 320;
+//                laParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
                 clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
                 clParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
                 close_ib.setLayoutParams(clParams);

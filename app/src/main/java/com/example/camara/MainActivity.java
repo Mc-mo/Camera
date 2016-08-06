@@ -7,11 +7,13 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,7 +46,7 @@ import java.util.TimerTask;
 import okhttp3.Call;
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, View
-        .OnClickListener{
+        .OnClickListener {
     private static MainActivity instance;
     //宽度450
     TimerTask task;
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     Animatable animation;
     DraweeController draweeController;
     ImageButton close_ib;
-//    GifImageView media_iv;
+    //    GifImageView media_iv;
     public int screenOritation = 60;
 
     Handler handler = new Handler();
@@ -138,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
         return instance;
     }
-
 
 
     @Override
@@ -300,20 +301,20 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     public void onClick(View v) {
         animation = draweeController.getAnimatable();
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.media_ll:
-                if (animation!=null){
-                    if (animation.isRunning()){
+                if (animation != null) {
+                    if (animation.isRunning()) {
                         animation.stop();
 
-                    }else {
+                    } else {
                         animation.start();
                     }
                 }
                 break;
             case R.id.close_ib:
-                if (animation!=null){
-                    if (animation.isRunning()){
+                if (animation != null) {
+                    if (animation.isRunning()) {
                         animation.stop();
                         handler.post(runnable);
                     }
@@ -323,7 +324,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
 
     }
-
 
 
     private final class FirstCallback implements Camera.PictureCallback {
@@ -346,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             netTime = System.currentTimeMillis();
 
             if (takePhoto_flag) {
-                handler.postDelayed(runnable2,1000);
+                handler.postDelayed(runnable2, 1000);
             }
 
         }
@@ -389,7 +389,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             if (response != null && response.has("bounding_rects")) {
 
                 JSONArray locations = response.optJSONArray("bounding_rects");
-
 
 
                 ArrayList<LocationBean> locationList = new ArrayList();
@@ -478,6 +477,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     private void showImg(float startX, float startY, float endX, float endY) {
         LinearLayout.LayoutParams laParams;
+        FrameLayout.LayoutParams clParams;
+
+
         surface_tip.setOnTouchListener(null);
 //        WindowManager wm = (WindowManager) MainActivity.this
 //                .getSystemService(Context.WINDOW_SERVICE);
@@ -490,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             case 1:
 
                 media_iv.setAspectRatio(1.33f);
-                 draweeController = Fresco.newDraweeControllerBuilder()
+                draweeController = Fresco.newDraweeControllerBuilder()
                         .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
                         .setAutoPlayAnimations(true)
                         .setControllerListener(new ControllerListener<ImageInfo>() {
@@ -501,7 +503,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                             }
 
                             @Override
-                            public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+                            public void onFinalImageSet(String id, ImageInfo imageInfo,
+                                                        Animatable animatable) {
 
                             }
 
@@ -544,7 +547,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                             }
 
                             @Override
-                            public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+                            public void onFinalImageSet(String id, ImageInfo imageInfo,
+                                                        Animatable animatable) {
 
                             }
 
@@ -581,11 +585,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             @Override
             public void run() {
                 animation = draweeController.getAnimatable();
-                if (animation!=null){
-                    if (!animation.isRunning()){
+                if (animation != null) {
+                    if (!animation.isRunning()) {
                         animation.stop();
 
-                        handler.postDelayed(runnable,2000);
+                        handler.postDelayed(runnable, 2000);
                     }
                 }
 
@@ -595,30 +599,45 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             timer = new Timer();
         }
 
-        timer.schedule(task,100,100);
+        timer.schedule(task, 100, 100);
 
 
         switch (screenOritation) {
             case Constants.TOP:
-
+                L.e(" Constants.TOP:" + Constants.TOP);
                 break;
             case Constants.LEFT:
-//                laParams=(LinearLayout.LayoutParams)media_iv.getLayoutParams();
-//                laParams.height = 320;
-//                media_iv.setAspectRatio(1.33f);
-
+                laParams = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
+                laParams.width = 320;
+                laParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                media_iv.setLayoutParams(laParams);
+                clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
+                clParams.gravity = Gravity.LEFT;
+                close_ib.setLayoutParams(clParams);
+                close_ib.setRotation(-90);
+                media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(-90);
-
+                L.e(" Constants.LEFT:" + Constants.LEFT);
                 break;
             case Constants.RIGHT:
-
+                laParams = (LinearLayout.LayoutParams) media_iv.getLayoutParams();
+                laParams.width = 320;
+//                laParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
+                clParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+                close_ib.setLayoutParams(clParams);
+                close_ib.setRotation(-90);
+                close_ib.setTranslationY(-20);
+                media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(90);
-
+                L.e(" Constants.RIGHT:" + Constants.RIGHT);
                 break;
             case Constants.BOTTOM:
-
                 media_ll.setRotation(180);
-
+                clParams = (FrameLayout.LayoutParams) close_ib.getLayoutParams();
+                clParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+                close_ib.setLayoutParams(clParams);
+                L.e(" Constants.BOTTOM:" + Constants.BOTTOM);
                 break;
 
 
@@ -627,10 +646,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         takePhoto_flag = false;
 
     }
-
-
-
-
 
 
 }

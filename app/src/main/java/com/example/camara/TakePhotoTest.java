@@ -388,11 +388,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-//            if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X && event.getY() >
-// SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
-//            ToastUtils.showToast(this, "点击了绿色框内空间");
 
-//            }
 
             ToastUtils.showToast(TakePhotoTest.this, "touch");
             if (show_flag) {
@@ -402,7 +398,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 L.e("onTouch---true");
                 show_flag = false;
                 media_tv.setText("发动机");
-                showImg(SVDraw.start_X, SVDraw.start_Y);
+                showImg();
                 surface_tip.setOnTouchListener(null);
             }
             return false;
@@ -410,7 +406,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
     }
 
-    private void showImg(float startX, float startY) {
+    private void showImg() {
         LinearLayout.LayoutParams laParams;
         FrameLayout.LayoutParams clParams;
 

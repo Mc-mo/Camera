@@ -31,10 +31,10 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
     private double heighScare_LR;
     private double heighScare_TB;
 
-    public static float start_X;
-    public static float start_Y;
-    public static float end_Y;
-    public static float end_X;
+    private float start_X;
+    private float start_Y;
+    private float end_Y;
+    private float end_X;
 
     public static float location_startX;
     public static float location_startY;
@@ -152,11 +152,18 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
                     end_X = (float) ((locationBean.getX() + locationBean.getWidth()) * widthScare);
                     end_Y = (float) ((locationBean.getY() + locationBean.getHeight()) * heighScare);
                     canvas.drawRect(start_X, start_Y, end_X, end_Y, mPaint);
-                   // location(orientation,start_X,start_Y,end_X,end_Y);
+                    // location(orientation,start_X,start_Y,end_X,end_Y);
                     L.e("location", "start_x=" + start_X + "startY=" + start_Y + "end+X=" + end_X
                             + "endy=" + end_Y + "location_startX=" + location_startX +
                             "location_startY=" + location_startY + "location_endX=" +
                             location_endX + "location_endY=" + location_endY);
+
+                    location_startX = (float) (locationBean.getX() * widthScare_LR);
+                    location_startY = (float) (locationBean.getY() * heighScare_LR);
+                    location_endX = (float) ((locationBean.getX() + locationBean.getWidth()) *
+                            widthScare_LR);
+                    location_endY = (float) ((locationBean.getY() + locationBean.getHeight()) *
+                            heighScare_LR);
 
                 }
             }
@@ -174,7 +181,7 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
-    public void location(int orientation,float start_x,float start_Y,float end_X,float end_Y){
+    public void location(int orientation, float start_x, float start_Y, float end_X, float end_Y) {
         switch (orientation) {
             case Constants.TOP:
                 location_startX = start_x;

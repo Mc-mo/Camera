@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     SVDraw surface_tip;
     TextView timeView;
     StringBuffer tv_string = new StringBuffer();
-    volatile int error_count = 0;
     boolean show_flag = true;
     LinearLayout media_ll;
     TextView media_text;
@@ -72,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     Animatable animation;
     DraweeController draweeController;
     ImageButton close_ib;
-    //    GifImageView media_iv;
     public int screenOritation = 60;
 
     Handler handler = new Handler();
@@ -84,10 +82,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         @Override
         public void run() {
             surface_tip.setOnTouchListener(new myTouchEventListener());
-            SVDraw.location_startX = SVDraw.start_X = 0;
-            SVDraw.location_startY = SVDraw.start_Y = 0;
-            SVDraw.location_endX = SVDraw.end_X = 0;
-            SVDraw.location_endY = SVDraw.end_Y = 0;
+            SVDraw.location_startX  = 0;
+            SVDraw.location_startY  = 0;
+            SVDraw.location_endX  = 0;
+            SVDraw.location_endY  = 0;
+            close_ib.setVisibility(View.GONE);
             media_ll.setVisibility(View.GONE);
             surface_tip.setVisibility(View.VISIBLE);
             show_flag = true;
@@ -157,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onStop();
         OkHttpUtils.getInstance().getOkhttpClient().dispatcher().cancelAll();
         L.e("onStop");
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(localReceiver);
 
     }
 
@@ -180,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         media_iv = (SimpleDraweeView) findViewById(R.id.media_iv);
         media_ll = (LinearLayout) findViewById(R.id.media_ll);
         media_text = (TextView) findViewById(R.id.media_text);
-        media_iv.setOnClickListener(this);
+        media_ll.setOnClickListener(this);
         close_ib = (ImageButton) findViewById(R.id.close_ib);
         close_ib.setOnClickListener(this);
     }
@@ -306,7 +304,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 if (animation != null) {
                     if (animation.isRunning()) {
                         animation.stop();
-
                     } else {
                         animation.start();
                     }
@@ -453,15 +450,16 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         @Override
         public boolean onTouch(View v, MotionEvent event) {
 
-            if (event.getX() > SVDraw.start_X && event.getX() < SVDraw.end_X &&
-                    event.getY() > SVDraw.start_Y && event.getY() < SVDraw.end_Y) {
+            if (event.getX() > SVDraw.location_startX && event.getX() < SVDraw.location_endX &&
+                    event.getY() > SVDraw.location_startY && event.getY() < SVDraw.location_endY) {
                 ToastUtils.showToast(MainActivity.this, "点击了绿色框内空间");
                 if (show_flag) {
+                    close_ib.setVisibility(View.VISIBLE);
                     surface_tip.setVisibility(View.GONE);
                     media_ll.setVisibility(View.VISIBLE);
                     media_ll.setOrientation(LinearLayout.VERTICAL);
                     show_flag = false;
-                    showImg(SVDraw.start_X, SVDraw.start_Y, SVDraw.end_X, SVDraw.end_Y);
+                    showImg();
 
 
                 }
@@ -475,18 +473,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     }
 
-    private void showImg(float startX, float startY, float endX, float endY) {
+    private void showImg() {
         LinearLayout.LayoutParams laParams;
         FrameLayout.LayoutParams clParams;
 
 
         surface_tip.setOnTouchListener(null);
-//        WindowManager wm = (WindowManager) MainActivity.this
-//                .getSystemService(Context.WINDOW_SERVICE);
-//
-//        int width = wm.getDefaultDisplay().getWidth();
-//        int height = wm.getDefaultDisplay().getHeight();
-//        L.e("size==", "width=" + width + "height=" + height);
+
 
         switch (id) {
             case 1:
@@ -579,27 +572,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 break;
 
         }
-
-        task = new TimerTask() {
-
-            @Override
-            public void run() {
-                animation = draweeController.getAnimatable();
-                if (animation != null) {
-                    if (!animation.isRunning()) {
-                        animation.stop();
-
-                        handler.postDelayed(runnable, 2000);
-                    }
-                }
-
-            }
-        };
-        if (timer == null) {
-            timer = new Timer();
-        }
-
-        timer.schedule(task, 100, 100);
 
 
         switch (screenOritation) {

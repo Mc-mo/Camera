@@ -1,1 +1,1 @@
-include ':app', ':toollibrary', ':frescodemo'
+include ':app', ':toollibrary'

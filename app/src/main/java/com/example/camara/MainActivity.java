@@ -6,6 +6,7 @@ import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -73,37 +74,29 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     ImageButton close_ib;
     public int screenOritation = 60;
 
-    Handler handler = new Handler();
-
-    Camera.PictureCallback currentCallBack;
-    public OrientationEventListener mOrientationListener;
-
-    Runnable runnable = new Runnable() {
+    Handler handler = new Handler() {
         @Override
-        public void run() {
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
             surface_tip.setOnTouchListener(new myTouchEventListener());
-            SVDraw.location_startX  = 0;
-            SVDraw.location_startY  = 0;
-            SVDraw.location_endX  = 0;
-            SVDraw.location_endY  = 0;
+            SVDraw.location_startX = 0;
+            SVDraw.location_startY = 0;
+            SVDraw.location_endX = 0;
+            SVDraw.location_endY = 0;
             close_ib.setVisibility(View.GONE);
             media_ll.setVisibility(View.GONE);
             surface_tip.setVisibility(View.VISIBLE);
             show_flag = true;
             takePhoto_flag = true;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (camera != null) {
-                        camera.takePicture(null, null, new FirstCallback());
-                    }
-                }
-            });
-
+            if (camera != null) {
+                camera.takePicture(null, null, new FirstCallback());
+            }
         }
-
-
     };
+
+    Camera.PictureCallback currentCallBack;
+    public OrientationEventListener mOrientationListener;
+
 
     Runnable runnable2 = new Runnable() {
         @Override
@@ -119,14 +112,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         Fresco.initialize(this);
         setContentView(R.layout.activity_main);
         initView();
-
         holder = surface_camera.getHolder();
         holder.setKeepScreenOn(true);
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
         initOrientationListener();
-
 
         CrashHandler.getInstance().init(getApplicationContext());
 
@@ -254,7 +244,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             L.e("setPreviewSize    null");
         }
 
-
         List<Camera.Size> picturesizesScale = Utils.getScaleSize(picturesizes, (float)
                 previewMaxSize.width / (float) previewMaxSize.height);
         Camera.Size pictureMaxSize = Utils.getMiddleSize(picturesizesScale, previewMaxSize);
@@ -313,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 if (animation != null) {
                     if (animation.isRunning()) {
                         animation.stop();
-                        handler.post(runnable);
+                        handler.sendEmptyMessage(0);
                     }
                 }
                 break;
@@ -341,10 +330,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                     ("\n");
             timeView.setText(tv_string);
             netTime = System.currentTimeMillis();
-
-            if (takePhoto_flag) {
-                handler.postDelayed(runnable2, 1000);
-            }
+            handler.postDelayed(runnable2, 1500);
 
         }
     }
@@ -387,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
                 JSONArray locations = response.optJSONArray("bounding_rects");
 
-
+                // 汽车底盘image_ids":[150087]-->150000~159999
                 ArrayList<LocationBean> locationList = new ArrayList();
                 if (locations != null && locations.length() > 0) {
                     for (int i = 0; i < locations.length(); i++) {
@@ -412,7 +398,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
             takephotoTime = System.currentTimeMillis();
             processTime = System.currentTimeMillis();
-            camera.takePicture(null, null, new FirstCallback());
+            if (takePhoto_flag) {
+                camera.takePicture(null, null, new FirstCallback());
+            }
         }
     };
 
@@ -461,11 +449,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                     show_flag = false;
                     showImg();
 
-
                 }
 
             }
-
 
             return false;
         }
@@ -474,103 +460,20 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void showImg() {
+        takePhoto_flag = false;
         LinearLayout.LayoutParams laParams;
         FrameLayout.LayoutParams clParams;
-
-
         surface_tip.setOnTouchListener(null);
-
-
         switch (id) {
             case 1:
-
-                media_iv.setAspectRatio(1.33f);
-                draweeController = Fresco.newDraweeControllerBuilder()
-                        .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
-                        .setAutoPlayAnimations(true)
-                        .setControllerListener(new ControllerListener<ImageInfo>() {
-
-                            @Override
-                            public void onSubmit(String id, Object callerContext) {
-
-                            }
-
-                            @Override
-                            public void onFinalImageSet(String id, ImageInfo imageInfo,
-                                                        Animatable animatable) {
-
-                            }
-
-                            @Override
-                            public void onIntermediateImageSet(String id, ImageInfo imageInfo) {
-
-                            }
-
-                            @Override
-                            public void onIntermediateImageFailed(String id, Throwable throwable) {
-
-                            }
-
-                            @Override
-                            public void onFailure(String id, Throwable throwable) {
-
-                            }
-
-                            @Override
-                            public void onRelease(String id) {
-
-                            }
-                        })
-                        .build();
-
-                media_iv.setController(draweeController);
-
-                media_text.setText("发动机");
+                ShowGif(R.mipmap.s1, "发动器原理");
                 break;
             case 2:
-                media_iv.setAspectRatio(1.33f);
-                draweeController = Fresco.newDraweeControllerBuilder()
-                        .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
-                        .setAutoPlayAnimations(true)
-                        .setControllerListener(new ControllerListener<ImageInfo>() {
-
-                            @Override
-                            public void onSubmit(String id, Object callerContext) {
-
-                            }
-
-                            @Override
-                            public void onFinalImageSet(String id, ImageInfo imageInfo,
-                                                        Animatable animatable) {
-
-                            }
-
-                            @Override
-                            public void onIntermediateImageSet(String id, ImageInfo imageInfo) {
-
-                            }
-
-                            @Override
-                            public void onIntermediateImageFailed(String id, Throwable throwable) {
-
-                            }
-
-                            @Override
-                            public void onFailure(String id, Throwable throwable) {
-
-                            }
-
-                            @Override
-                            public void onRelease(String id) {
-
-                            }
-                        })
-                        .build();
-                media_iv.setController(draweeController);
-
-                media_text.setText("启动机");
+                ShowGif(R.mipmap.s3, "发动机构造");
                 break;
-
+            case 3:
+                ShowGif(R.mipmap.s4, "汽车底盘");
+                break;
         }
 
 
@@ -599,7 +502,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 clParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
                 close_ib.setLayoutParams(clParams);
                 close_ib.setRotation(-90);
-                close_ib.setTranslationY(-20);
+                close_ib.setTranslationY(-20f);
                 media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(90);
                 L.e(" Constants.RIGHT:" + Constants.RIGHT);
@@ -615,8 +518,52 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         }
 
-        takePhoto_flag = false;
 
+
+    }
+
+    private void ShowGif(int picId, String picName) {
+        media_iv.setAspectRatio(1.33f);
+        draweeController = Fresco.newDraweeControllerBuilder()
+                .setUri("res://" + getPackageName() + "/" + picId)
+                .setAutoPlayAnimations(true)
+                .setControllerListener(new ControllerListener<ImageInfo>() {
+
+                    @Override
+                    public void onSubmit(String id, Object callerContext) {
+
+                    }
+
+                    @Override
+                    public void onFinalImageSet(String id, ImageInfo imageInfo,
+                                                Animatable animatable) {
+
+                    }
+
+                    @Override
+                    public void onIntermediateImageSet(String id, ImageInfo imageInfo) {
+
+                    }
+
+                    @Override
+                    public void onIntermediateImageFailed(String id, Throwable throwable) {
+
+                    }
+
+                    @Override
+                    public void onFailure(String id, Throwable throwable) {
+
+                    }
+
+                    @Override
+                    public void onRelease(String id) {
+
+                    }
+                })
+                .build();
+        media_iv.setController(draweeController);
+
+        media_text.setText(picName);
     }
 
 

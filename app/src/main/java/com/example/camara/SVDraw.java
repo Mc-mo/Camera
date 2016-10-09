@@ -153,17 +153,25 @@ public class SVDraw extends SurfaceView implements SurfaceHolder.Callback {
                     end_Y = (float) ((locationBean.getY() + locationBean.getHeight()) * heighScare);
                     canvas.drawRect(start_X, start_Y, end_X, end_Y, mPaint);
                     // location(orientation,start_X,start_Y,end_X,end_Y);
+
+                    if (orientation == 1 || orientation == 3) {
+                        location_startX = start_X;
+                        location_endX = end_X;
+                        location_startY = start_Y;
+                        location_endY = end_Y;
+                    } else {
+
+                        location_startX = (float) (locationBean.getX() * widthScare_LR);
+                        location_startY = (float) (locationBean.getY() * heighScare_LR);
+                        location_endX = (float) ((locationBean.getX() + locationBean.getWidth()) *
+                                widthScare_LR);
+                        location_endY = (float) ((locationBean.getY() + locationBean.getHeight()) *
+                                heighScare_LR);
+                    }
                     L.e("location", "start_x=" + start_X + "startY=" + start_Y + "end+X=" + end_X
                             + "endy=" + end_Y + "location_startX=" + location_startX +
                             "location_startY=" + location_startY + "location_endX=" +
                             location_endX + "location_endY=" + location_endY);
-
-                    location_startX = (float) (locationBean.getX() * widthScare_LR);
-                    location_startY = (float) (locationBean.getY() * heighScare_LR);
-                    location_endX = (float) ((locationBean.getX() + locationBean.getWidth()) *
-                            widthScare_LR);
-                    location_endY = (float) ((locationBean.getY() + locationBean.getHeight()) *
-                            heighScare_LR);
 
                 }
             }

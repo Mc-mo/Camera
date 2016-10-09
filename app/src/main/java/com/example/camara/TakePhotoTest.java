@@ -413,7 +413,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
         media_iv.setAspectRatio(1.33f);
         draweeController = Fresco.newDraweeControllerBuilder()
-                .setUri("res://" + getPackageName() + "/" + R.mipmap.s3)
+                .setUri("res://" + getPackageName() + "/" + R.mipmap.s4)
                 .setAutoPlayAnimations(true)
                 .setControllerListener(new ControllerListener<ImageInfo>() {
 
@@ -477,7 +477,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 clParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
                 close_ib.setLayoutParams(clParams);
                 close_ib.setRotation(-90);
-                close_ib.setTranslationY(-20);
+                close_ib.setTranslationY(-20f);
                 media_iv.setAspectRatio(1.33f);
                 media_ll.setRotation(90);
                 L.e(" Constants.RIGHT:" + Constants.RIGHT);

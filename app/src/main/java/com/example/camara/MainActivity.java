@@ -330,7 +330,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                     ("\n");
             timeView.setText(tv_string);
             netTime = System.currentTimeMillis();
-            handler.postDelayed(runnable2, 1500);
+            if (takePhoto_flag) {
+                handler.postDelayed(runnable2, 1500);
+            }
+
 
         }
     }
@@ -354,7 +357,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             netTime = System.currentTimeMillis();
             processTime = System.currentTimeMillis();
             takephotoTime = System.currentTimeMillis();
-            camera.takePicture(null, null, new FirstCallback());
+            if (takePhoto_flag) {
+                try {
+                    camera.takePicture(null, null, new FirstCallback());
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
 
         @Override
@@ -466,13 +475,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         surface_tip.setOnTouchListener(null);
         switch (id) {
             case 1:
-                ShowGif(R.mipmap.s1, "发动器原理");
+                ShowGif(R.drawable.s1, "发动器原理");
                 break;
             case 2:
-                ShowGif(R.mipmap.s3, "发动机构造");
+                ShowGif(R.drawable.s3, "发动机构造");
                 break;
             case 3:
-                ShowGif(R.mipmap.s4, "汽车底盘");
+                ShowGif(R.drawable.s4, "汽车底盘");
                 break;
         }
 
@@ -517,7 +526,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
 
         }
-
 
 
     }

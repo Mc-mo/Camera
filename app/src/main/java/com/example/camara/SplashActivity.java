@@ -9,8 +9,10 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.camara.utils.Constants;
 import com.example.camara.utils.Utils;
 import com.zhuchudong.toollibrary.L;
 
@@ -25,9 +27,10 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        L l=new L();
-        l.startWriteLogToSdcard(getExternalCacheDir()+"log.txt",true);
+        L l = new L();
+        l.startWriteLogToSdcard(getExternalCacheDir() + "log.txt", true);
         setContentView(R.layout.activity_splash);
+
         Button start = (Button) findViewById(R.id.start);
         if (start != null) {
             start.setOnClickListener(new View.OnClickListener() {
@@ -51,13 +54,19 @@ public class SplashActivity extends AppCompatActivity {
             });
         }
 
+        EditText et_id = (EditText) findViewById(R.id.et_url);
+        if (et_id != null) {
+            Constants.url = et_id.getText().toString();
+        }
+
 
     }
 
     private void gotoActivity() {
         if (Utils.checkCameraHardware(SplashActivity.this)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!(checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)) {
+                if (!(checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager
+                        .PERMISSION_GRANTED)) {
                     requestCameraPermission();
                 } else {
                     startActivity(intent);
@@ -83,7 +92,8 @@ public class SplashActivity extends AppCompatActivity {
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_CODE) {
             startActivity(new Intent(SplashActivity.this, MainActivity.class));

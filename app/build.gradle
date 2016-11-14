@@ -25,6 +25,12 @@ android {
     }
     productFlavors {
     }
+    sourceSets {
+        main {
+            assets.srcDirs = ['src/main/assets', 'src/main/assets/']
+            jniLibs.srcDirs = ['libs']
+        }
+    }
 }
 
 dependencies {
@@ -37,4 +43,6 @@ dependencies {
     compile 'com.facebook.fresco:fresco:0.8.1'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.17'
     // 支持 GIF 动图，需要添加
+    compile files('libs/Msc.jar')
+    compile files('libs/Sunflower.jar')
 }

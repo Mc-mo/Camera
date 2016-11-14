@@ -20,12 +20,14 @@ import android.widget.TextView;
 
 import com.example.camara.utils.Constants;
 import com.example.camara.utils.ImageUtils;
+import com.example.camara.utils.Speaker;
 import com.example.camara.utils.Utils;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.ControllerListener;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.image.ImageInfo;
+import com.iflytek.cloud.SpeechUtility;
 import com.zhuchudong.toollibrary.AppUtils;
 import com.zhuchudong.toollibrary.L;
 import com.zhuchudong.toollibrary.StatusBarUtil;
@@ -95,6 +97,9 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
         holder.setKeepScreenOn(true);
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+
+        SpeechUtility.createUtility(TakePhotoTest.this, "appid=57c7b4e1");
 
 
         initOrientationListener();
@@ -391,6 +396,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
 
 
             ToastUtils.showToast(TakePhotoTest.this, "touch");
+            Speaker.getInstance(TakePhotoTest.this).speak("一二三四五，上山打老虎");
             if (show_flag) {
                 close_ib.setVisibility(View.VISIBLE);
                 surface_tip.setVisibility(View.GONE);
@@ -398,6 +404,7 @@ public class TakePhotoTest extends AppCompatActivity implements SurfaceHolder.Ca
                 L.e("onTouch---true");
                 show_flag = false;
                 media_tv.setText("发动机");
+
                 showImg();
                 surface_tip.setOnTouchListener(null);
             }
